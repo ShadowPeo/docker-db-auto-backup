@@ -1,6 +1,7 @@
 # docker-db-auto-backup
 
-![](https://github.com/RealOrangeOne/docker-db-auto-backup/workflows/CI/badge.svg)
+Modified from original script to add further functionality, intention is to ultimatly push it back upstream or build this container via CI but I need to learn that
+further features are going to be implemented as per the ToDo Below
 
 A script to automatically back up all databases running under docker on a host, with optional compression support.
 
@@ -54,3 +55,14 @@ services:
 ### Oneshot
 
 You may want to use this container to run backups just once, rather than on a schedule. To achieve this, set `$SCHEDULE` to an empty string, and the backup will run just once. This may be useful in conjunction with an external scheduler.
+
+## ToDo
+
+These are listed in the order of priority
+
+- [x] Update MariaDB/MySQL Code to handle single database
+- [ ] Allow for backup versioning/rotation as per the old script with DAYS/MONTHS/QUARTERS/YEARS
+- [ ] Allow for container inclusion/exclusion through labels, by default backup unless disabled will be set, but can be reversed (considering)
+- [ ] Allow for DB container label to specify a backup healthcheck webhook to ping (considering)
+- [x] Update MariaDB/MySQL Code to handle blank root passwords (considering)
+- [ ] Allow for use of Apprise API to send notifications about backup process (considering)
