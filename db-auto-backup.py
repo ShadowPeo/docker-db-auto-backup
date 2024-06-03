@@ -251,8 +251,8 @@ def backup(now: datetime) -> None:
 
 
 if __name__ == "__main__":
-#    if os.environ.get("SCHEDULE"):
-#        print(f"Running backup with schedule '{SCHEDULE}'.")
-#        pycron.start()
-#    else:
+    if os.environ.get("SCHEDULE"):
+        print(f"Running backup with schedule '{SCHEDULE}'.")
+        pycron.start()
+    else:
         backup(datetime.now())
