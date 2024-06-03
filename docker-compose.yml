@@ -1,10 +1,14 @@
+networks:
+  Adminer:
+    external: true
+
 services:
   backup:
+    container_name: DB_BACKUP
     build:
       context: .
     restart: unless-stopped
     command: "sleep infinity"
-    container_name: docker-db-auto-backup
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - ./backups:/var/backups
@@ -16,23 +20,81 @@ services:
       - redis
 
   psql:
+    container_name: POSTGRES
     image: postgres:alpine
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=password
 
   mariadb:
+    container_name: MARIA_DB
     image: mariadb:latest
     restart: unless-stopped
     environment:
       - MARIADB_ROOT_PASSWORD=password
+    networks:
+      - Adminer
+
+  mariadb_empty:
+    container_name: MARIA_DB_BLANKROOT
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=yes
+    networks:
+      - Adminer
+
+  mariadb_empty2:
+    container_name: MARIA_DB_BLANKROOT2
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - Adminer
+
+  mariadb_empty3:
+    container_name: MARIA_DB_ERROR
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    networks:
+      - Adminer
+
+  mariadb_single:
+    container_name: MARIA_DB_SINGLE
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MARIADB_USER="USER22"
+      - MYSQL_PASSWORD="PASSWORD22"
+      - MARIADB_DATABASE="DATABASE_22"
+    networks:
+      - Adminer
 
   mysql:
+    container_name: MYSQL
     image: mysql:latest
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=password
+    networks:
+      - Adminer
+
+  mysql-empty:
+    container_name: MYSQL_BLANKROOT
+    image: mysql:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - Adminer
 
   redis:
+    container_name: REDIS
     image: redis:alpine
     restart: unless-stopped
+    networks:
+      - Adminer

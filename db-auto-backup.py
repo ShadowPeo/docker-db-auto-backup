@@ -105,17 +105,48 @@ def backup_mysql(container: Container) -> str:
     # The mariadb container supports both
     if "MARIADB_ROOT_PASSWORD" in env:
         auth = "-p$MARIADB_ROOT_PASSWORD"
+        database = "--all-databases"
     elif "MYSQL_ROOT_PASSWORD" in env:
         auth = "-p$MYSQL_ROOT_PASSWORD"
+        database = "--all-databases"
+    # Backup all databases with a blank password if an empty root password is allowed
+    elif "MYSQL_ALLOW_EMPTY_PASSWORD" in env or "MARIADB_ALLOW_EMPTY_ROOT_PASSWORD" in env:
+        auth = ""
+        database = "--all-databases"
+    # If a single database is listed in the environment variables back that up
+
+    elif (not "MYSQL_ROOT_PASSWORD" in env  and not "MARIADB_ROOT_PASSWORD" in env) and (("MYSQL_USER" in env or "MARIADB_USER" in env) and ("MYSQL_PASSWORD" in env or "MARIADB_PASSWORD" in env) and ("MYSQL_DATABASE" in env or "MARIADB_DATABASE" in env)):
+        auth = ""
+        database = ""
+
+        # Set which database is to be backed up
+        if "MYSQL_DATABASE" in env:
+            database = "$MYSQL_DATABASE"
+        else:
+            database = "$MARIADB_DATABASE"
+
+        # Configure authorisation string as the MariaDB container supports both the MariaDB variables and the MySQL Variables
+
+        if "MYSQL_USER" in env:
+            auth="-u$MYSQL_USER"
+        else:
+            auth="-u$MARIADB_USER"
+        
+        if "MYSQL_PASSWORD" in env:
+            auth = auth + " -p$MYSQL_PASSWORD"
+        else:
+            auth = auth + " -p$MARIADB_PASSWORD"
+
     else:
-        raise ValueError(f"Unable to find MySQL root password for {container.name}")
+        raise ValueError(f"Unable to find MySQL user/password/database combination for {container.name}")
 
     if binary_exists_in_container(container, "mariadb-dump"):
         backup_binary = "mariadb-dump"
     else:
         backup_binary = "mysqldump"
 
-    return f"bash -c '{backup_binary} {auth} --all-databases'"
+    print(f"bash -c '{backup_binary} {auth} {database}'")
+    return f"bash -c '{backup_binary} {auth} {database}'"
 
 
 def backup_redis(container: Container) -> str:
@@ -177,7 +208,11 @@ def backup(now: datetime) -> None:
         )
         backup_temp_file_path = BACKUP_DIR / temp_backup_file_name()
 
-        backup_command = backup_provider.backup_method(container)
+        try:
+            backup_command = backup_provider.backup_method(container)
+        except Exception as e:
+            print(e)
+            continue
         _, output = container.exec_run(backup_command, stream=True, demux=True)
 
         with open_file_compressed(
@@ -216,8 +251,8 @@ def backup(now: datetime) -> None:
 
 
 if __name__ == "__main__":
-    if os.environ.get("SCHEDULE"):
-        print(f"Running backup with schedule '{SCHEDULE}'.")
-        pycron.start()
-    else:
+#    if os.environ.get("SCHEDULE"):
+#        print(f"Running backup with schedule '{SCHEDULE}'.")
+#        pycron.start()
+#    else:
         backup(datetime.now())
