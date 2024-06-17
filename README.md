@@ -61,7 +61,7 @@ You may want to use this container to run backups just once, rather than on a sc
 These are listed in the order of priority
 
 - [x] Update MariaDB/MySQL Code to handle single database
-- [ ] Allow for backup versioning/rotation as per the old script with DAYS/MONTHS/QUARTERS/YEARS
+- [ ] Allow for backup versioning/rotation with DAYS/MONTHS/QUARTERS/YEARS
 - [ ] Allow for container inclusion/exclusion through labels, by default backup unless disabled will be set, but can be reversed (considering)
 - [ ] Allow for DB container label to specify a backup healthcheck webhook to ping (considering)
 - [x] Update MariaDB/MySQL Code to handle blank root passwords (considering)

@@ -145,7 +145,6 @@ def backup_mysql(container: Container) -> str:
     else:
         backup_binary = "mysqldump"
 
-    print(f"bash -c '{backup_binary} {auth} {database}'")
     return f"bash -c '{backup_binary} {auth} {database}'"
 
 
